@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  app:
+    image: node:18
+    working_dir: /app
+    volumes:
+      - ./app:/app
+    command: node index.js
+    environment:
+      - REDIS_HOST=redis
+      - MONGO_URL=mongodb://mongo:27017/mydb
+    networks:
+      - app-network
+    depends_on:
+      - mongo
+      - redis
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 10s
+      retries: 3
+
+  redis:
+    image: redis:7
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 3
+
+  mongo:
+    image: mongo:6
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      retries: 3
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 10s
+      retries: 3
+
+volumes:
+  mongo-data:
+
+networks:
+  app-network:

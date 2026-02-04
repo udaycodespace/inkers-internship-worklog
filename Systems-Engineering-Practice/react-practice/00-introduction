@@ -1,0 +1,49 @@
+React — Introduction
+
+React:
+JS library to build dynamic, component-based user interfaces.
+
+Why React?
+Keeps UI and data in sync automatically.
+
+React > HTML + CSS + JS because:
+
+No manual DOM updates
+
+Reusable components
+
+Better for large & complex UIs
+
+Faster UI updates (efficient rendering)
+
+Cleaner and maintainable code
+
+When to learn React:
+After strong basics of JavaScript + DOM + browser behavior.
+
+Why React was created:
+To fix UI inconsistency when data changes but UI doesn’t update properly.
+
+Core React Concepts:
+
+Component → reusable UI block
+
+JSX → HTML inside JavaScript
+
+State → data that changes UI
+
+Props → data passed to components
+
+Hooks → manage state & logic (useState, useEffect)
+
+Learning approach:
+Project-based, code-along practice.
+
+Real-world uses:
+Dashboards, e-commerce, social apps, admin panels, large web apps.
+
+Next after React:
+Backend or frameworks like Next.js.
+
+Reference:
+Chai aur React series — [https://www.youtube.com/watch?v=vz1RlUyrc3w&list=PLu71SKxNbfoDqgPchmvIsL4hTnJIrtige&index=1]

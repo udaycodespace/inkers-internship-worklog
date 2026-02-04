@@ -1,0 +1,17 @@
+services:
+  app-dev:
+    build:
+      context: .
+      args:
+        BASE_IMAGE: python:3.11-slim
+        APP_VERSION: 1.2.0
+        APP_ENV: development
+
+  app-prod:
+    build:
+      context: .
+      args:
+        BASE_IMAGE: python:3.10-alpine
+        APP_VERSION: 3.0.0
+        APP_ENV: production
+

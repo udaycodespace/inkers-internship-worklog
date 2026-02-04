@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - "8083:80"
+    networks:
+      - app-network
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: mydb
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+volumes:
+  pg-data:
+
+networks:
+  app-network:

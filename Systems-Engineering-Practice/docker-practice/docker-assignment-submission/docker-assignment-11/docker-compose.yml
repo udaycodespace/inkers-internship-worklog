@@ -1,0 +1,8 @@
+version: "3.8"
+
+services:
+  app:
+    image: env-demo
+    environment:
+      APP_NAME: ComposeApp
+      APP_ENV: staging
