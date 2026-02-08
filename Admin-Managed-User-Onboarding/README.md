@@ -1,62 +1,16 @@
 # Admin-Managed User Onboarding System
+**Internship Task: Inkers AI (Completed Feb 08, 2026)**
 
-## Objective
+## Overview
+A full-stack implementation allowing Admins to create and manage users via a React frontend, leveraging Frappe's native authentication and role-based access control.
 
-Implement an **admin-only user management and onboarding system** using:
+## Project Structure
+- **/frontend**: Full React application containing the Admin Dashboard.
+- **/backend**: Custom Frappe API handlers for user creation and role assignment.
+- **/docs**: Technical notes on error resolution and system architecture.
 
-* Frappe backend
-* React frontend
-* Native authentication, roles, and email invitation system
-
----
-
-## Features Implemented
-
-### Backend (Frappe)
-
-* Admin-only user creation
-* User onboarding via built-in email invitation / reset-password flow
-* Role-based access control enforced strictly at the backend
-* Secure user listing API with sensitive fields excluded
-* Native **User DocType** usage (no custom authentication)
-
-### Frontend (React)
-
-* Admin-only dashboard
-* User list view
-* Add new user form (email, first name, last name, role)
-* Invitation confirmation UI after user creation
-* Session-based authentication
-
----
-
-## Folder Structure
-
-```
-Admin-Managed-User-Onboarding/
-├── backend/
-│   ├── api.py
-│   └── README.md
-├── docs/
-│   ├── README.md
-│   └── screenshots/
-│       ├── 01_roles_created.png
-│       ├── 02_backend_api_code.png
-│       ├── 03_admin_user_list.png
-│       └── 04_non_admin_access_blocked.png
-└── README.md
-```
-
----
-
-## Notes
-
-* Users are created in an **enabled state**
-* Passwords are **never handled manually**
-* Email-based onboarding is mandatory
-* Backend strictly enforces role-based permissions
-* Non-admin users are blocked at API level
-
----
-
-This submission contains the backend implementation, documentation, and proof screenshots for review.
+## How to Run
+1. Start Redis Cache: `redis-server ./config/redis_cache.conf` (Port 13000)
+2. Start Redis Queue: `redis-server ./config/redis_queue.conf` (Port 11000)
+3. Start Backend: `bench serve --port 8000`
+4. Start Frontend: `cd frontend && npm start`
