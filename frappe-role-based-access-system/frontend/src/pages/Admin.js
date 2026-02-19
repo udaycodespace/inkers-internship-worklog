@@ -1,42 +1,89 @@
 import React, { useEffect, useState } from "react";
 import frappe from "../api/frappe";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Admin() {
   const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [selectedRoles, setSelectedRoles] = useState([]);
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [role, setRole] = useState("Company Employee");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // 🔐 Load Users (Admin Only)
+  // =========================================
+  // LOAD USERS
+  // =========================================
   const loadUsers = async () => {
     try {
       const res = await frappe.get(
         "/api/method/company_access_portal.api.user_api.list_users"
       );
 
-      setUsers(res.data.message);
-      setLoading(false);
+      const userData = res?.data?.message;
+      setUsers(Array.isArray(userData) ? userData : []);
     } catch (err) {
-      // If not admin → redirect safely
+      console.error("User load failed:", err);
       navigate("/tasks");
     }
   };
 
-  // ➕ Create User
-  const createUser = async () => {
-    if (!email.trim() || !firstName.trim() || !lastName.trim()) {
-      alert("All fields are required");
+  // =========================================
+  // LOAD ROLES (BULLETPROOF)
+  // =========================================
+  const loadRoles = async () => {
+    try {
+      const res = await frappe.get(
+        "/api/method/company_access_portal.api.role_api.list_roles"
+      );
+
+      const roleData = res?.data?.message;
+
+      if (Array.isArray(roleData)) {
+        setRoles(roleData);
+      } else {
+        setRoles([]);
+      }
+    } catch (err) {
+      console.error("Failed loading roles:", err);
+      setRoles([]);
+      setError("Failed to load roles.");
+    }
+  };
+
+  // Reload when returning from /roles page
+  useEffect(() => {
+    setLoading(true);
+
+    Promise.all([loadUsers(), loadRoles()]).finally(() =>
+      setLoading(false)
+    );
+  }, [location]);
+
+  // =========================================
+  // CREATE USER
+  // =========================================
+  const createUser = async (e) => {
+    e.preventDefault();
+
+    if (!email.trim() || !firstName.trim()) {
+      setError("Email and First Name are required.");
+      return;
+    }
+
+    if (selectedRoles.length === 0) {
+      setError("Select at least one role.");
       return;
     }
 
     try {
       setSubmitting(true);
+      setError("");
 
       await frappe.post(
         "/api/method/company_access_portal.api.user_api.create_user",
@@ -44,127 +91,149 @@ export default function Admin() {
           email: email.trim(),
           first_name: firstName.trim(),
           last_name: lastName.trim(),
-          role
+          roles: selectedRoles,
         }
       );
 
-      alert("User created and invitation sent successfully!");
-
+      // Reset form
       setEmail("");
       setFirstName("");
       setLastName("");
+      setSelectedRoles([]);
 
-      loadUsers();
+      await loadUsers(); // refresh list
     } catch (err) {
-      alert(err.response?.data?.message || "Error creating user");
+      setError(err?.message || "Error creating user.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
+  const toggleRole = (roleName) => {
+    setSelectedRoles((prev) =>
+      prev.includes(roleName)
+        ? prev.filter((r) => r !== roleName)
+        : [...prev, roleName]
+    );
+  };
 
   if (loading) {
-    return <div style={{ padding: 40 }}>Loading Admin Panel...</div>;
+    return <div className="container">Loading...</div>;
   }
 
   return (
-    <div style={{ padding: 40, maxWidth: 700 }}>
-      <h2>Admin Panel</h2>
-
-      {/* 🔹 Navigation Buttons */}
-      <div style={{ marginBottom: 20 }}>
-        <button onClick={() => navigate("/tasks")}>
-          Back to Tasks
-        </button>
-
-        <button
-          style={{ marginLeft: 10 }}
-          onClick={() => navigate("/roles")}
-        >
-          Manage Roles
-        </button>
-      </div>
-
-      <hr />
-
-      {/* 🔹 Create User Section */}
-      <h3>Create New User</h3>
-
-      <div style={{ marginBottom: 10 }}>
-        <input
-          style={{ width: "100%", padding: 8 }}
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-
-      <div style={{ marginBottom: 10 }}>
-        <input
-          style={{ width: "100%", padding: 8 }}
-          placeholder="First Name"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-        />
-      </div>
-
-      <div style={{ marginBottom: 10 }}>
-        <input
-          style={{ width: "100%", padding: 8 }}
-          placeholder="Last Name"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-        />
-      </div>
-
-      <div style={{ marginBottom: 10 }}>
-        <select
-          style={{ width: "100%", padding: 8 }}
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-        >
-          <option value="Company Employee">Company Employee</option>
-          <option value="Company Admin">Company Admin</option>
-        </select>
-      </div>
-
-      <button
-        onClick={createUser}
-        disabled={submitting}
-        style={{ padding: "8px 16px" }}
+    <div className="container">
+      {/* ================= HEADER ================= */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 20,
+          alignItems: "center",
+        }}
       >
-        {submitting ? "Creating..." : "Create User"}
-      </button>
+        <h1>Admin Panel</h1>
+        <div>
+          <button onClick={() => navigate("/tasks")}>
+            Back to Tasks
+          </button>
+          <button
+            style={{ marginLeft: 10 }}
+            onClick={() => navigate("/roles")}
+          >
+            Manage Roles
+          </button>
+        </div>
+      </div>
 
-      <hr style={{ margin: "30px 0" }} />
+      {error && <div className="error">{error}</div>}
 
-      {/* 🔹 User List */}
-      <h3>All Users</h3>
+      {/* ================= CREATE USER ================= */}
+      <div className="card">
+        <h2>Create New User</h2>
 
-      {users.length === 0 ? (
-        <p>No users found.</p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {users.map((u) => (
-            <li
-              key={u.name}
+        <form onSubmit={createUser}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <input
+            placeholder="First Name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+
+          <input
+            placeholder="Last Name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+
+          <div style={{ marginTop: 15 }}>
+            <strong>Select Roles:</strong>
+
+            <div
               style={{
-                padding: 10,
-                marginBottom: 8,
-                border: "1px solid #ddd",
-                borderRadius: 6
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fill, minmax(200px, 1fr))",
+                marginTop: 10,
+                gap: 6,
               }}
             >
-              <strong>{u.first_name} {u.last_name}</strong>
-              <br />
-              <small>{u.name}</small>
-            </li>
-          ))}
-        </ul>
-      )}
+              {roles.length === 0 ? (
+                <p>No roles available</p>
+              ) : (
+                roles.map((r) => (
+                  <label key={r.name}>
+                    <input
+                      type="checkbox"
+                      checked={selectedRoles.includes(r.name)}
+                      onChange={() => toggleRole(r.name)}
+                    />{" "}
+                    {r.name}
+                  </label>
+                ))
+              )}
+            </div>
+          </div>
+
+          <button type="submit" disabled={submitting}>
+            {submitting ? "Creating..." : "Create User"}
+          </button>
+        </form>
+      </div>
+
+      {/* ================= USER LIST ================= */}
+      <div className="card" style={{ marginTop: 30 }}>
+        <h2>All Users</h2>
+
+        {users.length === 0 ? (
+          <p>No users found.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u.name}>
+                  <td>
+                    {u.first_name} {u.last_name}
+                  </td>
+                  <td>{u.name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }

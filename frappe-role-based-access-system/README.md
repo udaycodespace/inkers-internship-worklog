@@ -1,191 +1,89 @@
-# 🏢 Frappe RBAC Admin Portal
+# 🚀 Company Access Portal
 
-A role-based admin-controlled user management system built using:
+### Enterprise-Grade RBAC Implementation
 
-* **Frappe Framework (Backend)**
-* **React (Frontend)**
-* **Native Frappe Role & Permission System (DocPerm)**
-* **SMTP-based email onboarding**
+**Role:** Full Stack Intern
 
-This project demonstrates secure, backend-enforced role-based access control with admin-managed user onboarding.
+**Company:** Inkers Technology Pvt. Ltd.
 
----
-
-## 🎯 Objective
-
-To implement an admin-controlled system where:
-
-* Admins can create users from React frontend
-* Users receive email invitation to set password
-* Authentication uses native Frappe session handling
-* Roles and permissions are strictly enforced at backend level
-* No custom authentication or parallel permission logic is used
-
-All access control relies exclusively on:
-
-* `User` DocType
-* `Role` DocType
-* `DocPerm / Role Permission Manager`
+**Tech Stack:** React.js, Frappe (Python/MariaDB), Axios, REST API
 
 ---
 
-## 🧠 Key Features Implemented
+## 👋 Overview
 
-### ✅ Admin User Management
+During my internship at **Inkers Technology**, I was tasked with solving a common enterprise friction point: managing complex Frappe permissions without exposing the technical "Backend Desk" to non-technical administrators.
 
-* Create users from React UI
-* Assign roles during creation
-* Send password setup invitation via email
-* List all users (Admin only)
+I engineered a **Role-Based Access Control (RBAC)** system that allows for complete user and permission management through a custom React interface while maintaining the high-security standards of the native Frappe `DocPerm` engine.
 
 ---
 
-### ✅ Role-Based Access Control (RBAC)
+## 📂 Project Structure
 
-* Create custom roles
-* Assign DocType-level permissions
-* Enforce backend role validation
-* Block unauthorized API access
+```text
+company-access-portal/
+├── frontend/     # React.js SPA (User Interface & Auth logic)
+├── backend/      # Frappe App (Custom REST API & Permission Logic)
+└── docs/         # Architecture, Security Protocols & API References
 
----
-
-### ✅ Task Management System
-
-* Create tasks
-* Update tasks
-* Delete tasks
-* Employees can manage only their own tasks
-* Admin can view all tasks
-
----
-
-### ✅ Secure Backend Validation
-
-* All APIs check roles using `frappe.get_roles()`
-* No frontend-only security
-* No ignore_permissions in business logic
-* Strict role enforcement
-
----
-
-### ✅ Email Onboarding Flow
-
-* SMTP configured using Gmail App Password
-* Default outgoing email account set
-* Invitation link generated automatically
-* User sets password via reset link
-* Login via session-based authentication
-
----
-
-## 🏗 Architecture Overview
-
-Frontend:
-React + Axios + Session Cookies
-
-Backend:
-Frappe Framework
-Native Role & Permission System
-MariaDB + Redis
-
-Authentication:
-Frappe Session-based authentication
-
-No JWT or custom token system implemented.
-
----
-
-## 🚀 How To Run
-
-### Backend (WSL)
-
-```bash
-wsl
-cd ~/role_system_bench
-bench start
 ```
 
-Access:
-[http://127.0.0.1:8002](http://127.0.0.1:8002)
+---
+
+## 🎯 The Internship Challenge
+
+The project was defined by three core requirements:
+
+1. **Frontend Sovereignty:** All administrative actions (Role creation, Permission toggling, User onboarding) must happen in React.
+2. **Zero Desk Exposure:** The "Reset Password" and "User Creation" flows must bypass the Frappe default UI entirely.
+3. **Backend Integrity:** The frontend should be "dumb" regarding security; the backend must independently validate every request using Frappe's native session and role validation.
 
 ---
 
-### Frontend (Windows)
+## 🏗 System Architecture
+
+1. **The Request:** React sends a structured API call via Axios.
+2. **The Interceptor:** Custom Python modules (`role_api.py`, `user_api.py`) validate the requester's identity.
+3. **The Enforcement:** The system queries Frappe's native `DocPerm` to check if the action is allowed.
+4. **The Response:** Data is returned only if the backend security layer is satisfied.
+
+---
+
+## 🛠 Features at a Glance
+
+* **Dynamic Role Management:** Create, delete, and modify custom roles on the fly.
+* **Permission Matrix:** A granular UI to toggle Read/Write/Create/Delete/Submit permissions for specific Doctypes.
+* **Secure Reset Flow:** A tokenized, time-sensitive (20 min) password reset system built to operate outside the Frappe Desk.
+* **Protected Roles:** Hardcoded logic to prevent the accidental deletion of "System" and "Business" roles.
+
+---
+
+## 🚀 Getting Started
+
+### ⚙️ Backend Setup
 
 ```bash
-cd company-portal-frontend
+cd backend
+bench start
+# If applying schema changes:
+bench --site [your-site-name] clear-cache && bench restart
+
+```
+
+### ⚛️ Frontend Setup
+
+```bash
+cd frontend
 npm install
 npm start
+
 ```
 
-Access:
-[http://localhost:3000](http://localhost:3000)
+* **App URL:** `http://localhost:3000`
+* **API Port:** `http://localhost:8002`
 
 ---
 
-## 🔐 Roles Implemented
+## 👨‍💻 Author
 
-### Company Admin
-
-* Full access to tasks
-* Manage users
-* Create roles
-* Assign permissions
-
-### Company Employee
-
-* Create tasks
-* Read/Write/Delete only own tasks (If Owner)
-* No admin access
-* Blocked at API level
-
----
-
-## 📬 Email Configuration
-
-* Gmail SMTP used
-* App password authentication
-* Default outgoing email enabled
-* Reset password template used
-
----
-
-## 🧪 Testing Performed
-
-✔ Admin can create users
-✔ Email invitation triggers correctly
-✔ Reset link sets password
-✔ Employee login successful
-✔ Employee restricted from admin APIs
-✔ Employee cannot modify other users' tasks
-✔ Backend blocks unauthorized API access
-
----
-
-## ⚠ Current Scope
-
-The current implementation includes:
-
-* Role creation
-* DocType permission assignment
-* User-role linking
-* Admin UI for user management
-
-The UI is functional and security-focused.
-Further UI refinement and advanced module-level permission visualization may be expanded in future iterations.
-
----
-
-## 📌 Notes
-
-* System uses native Frappe permission framework.
-* No custom permission tables.
-* No parallel access control mechanism.
-* Backend is the single source of truth for authorization.
-
----
-
-## 📎 Status
-
-Core functionality is complete and operational.
-Additional improvements and refinements are ongoing as part of iterative development.
+**UDAY** *Full Stack Intern – Inkers Technology Pvt. Ltd.* *Final Year Computer Science & Technology*

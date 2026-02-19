@@ -1,70 +1,103 @@
-# Getting Started with Create React App
+# ⚛ Frontend – Company Access Portal
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is the React-based client application for the Company Access Portal. It serves as the primary administrative interface for managing users, roles, and system-wide permissions.
 
-## Available Scripts
+### 🛠 Tech Stack
 
-In the project directory, you can run:
+* **Framework:** React.js
+* **Routing:** React Router v6
+* **State Management:** Context API (for Auth & Permissions)
+* **API Client:** Axios (with custom interceptors)
+* **Styling:** CSS3 / Modern UI Framework
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🎯 Frontend Responsibilities
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+The frontend is designed to be a "Smart Interface" but a "Dumb Security Layer." Its primary goals are:
 
-### `npm test`
+* **Session Management:** Handling logins and persistent auth states.
+* **Role-Based UI (RBUI):** Conditionally rendering components based on user roles.
+* **Permission Toggling:** Providing a matrix-style UI for `DocPerm` updates.
+* **Secure Flows:** Managing the Reset Password UI and token validation.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+> **Note:** While the frontend hides buttons (like 'Delete' or 'Create'), security is always re-enforced by the Frappe backend.
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 📂 Folder Structure
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```text
+src/
+├── api/
+│   └── frappe.js        # Axios instance & centralized API calls
+├── context/
+│   └── AuthContext.js   # Global state for user roles & session
+├── pages/
+│   ├── Login.js         # Custom login (bypasses Frappe Desk)
+│   ├── Tasks.js         # Permission-sensitive CRUD page
+│   ├── Admin.js         # User & Role management dashboard
+│   ├── Roles.js         # Permission Matrix & Custom Role creation
+│   └── ResetPassword.js # Token-based password update page
+├── App.js               # Route protection & Layout
+└── index.js             # Entry point
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 🔐 Authentication Logic
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Login Workflow
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+React communicates with `/api/method/login`. Upon a successful response:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+1. A `react_auth` flag is set in storage.
+2. `get_current_user_info()` is called to fetch the user’s specific role list.
+3. The `AuthContext` updates, triggering a redirect to the dashboard.
 
-## Learn More
+### Secure Logout
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+To prevent session hijacking or "back-button" access:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+* Calls `/api/method/logout`.
+* **Hard Reset:** All `localStorage` and `sessionStorage` items are purged.
+* **Redirect:** The user is pushed back to the `/` root.
 
-### Code Splitting
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 👑 Role-Based UI Rendering
 
-### Analyzing the Bundle Size
+The `Tasks.js` and `Admin.js` pages use a custom hook to check permissions before rendering elements:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+* **Company Admin:** Sees all management tabs and CRUD buttons.
+* **Task Manager:** Sees Task CRUD but cannot access the "Roles" tab.
+* **Task Viewer:** Only sees the "View" button; 'Edit' and 'Delete' are hidden.
 
-### Making a Progressive Web App
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 🚀 Development
 
-### Advanced Configuration
+### Installation
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```bash
+npm install
 
-### Deployment
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### Run Locally
 
-### `npm run build` fails to minify
+```bash
+npm start
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
+
+*The app will automatically proxy requests to the Frappe backend at `http://localhost:8002`.*
+
+---
+
+## 🧠 Technical Decisions
+
+* **Context API over Redux:** Used Context API for a lightweight approach to managing auth state and global user permissions.
+* **Strict Auth Cleanup:** Implemented a "No-Ghost-Session" policy where the frontend verifies the backend session on every page refresh to prevent stale logins.
+* **Dynamic Matrix:** The Permission Matrix in `Roles.js` is generated dynamically from the backend Doctype list, ensuring the UI never goes out of sync with the DB schema.
